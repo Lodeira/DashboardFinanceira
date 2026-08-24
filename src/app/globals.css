@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eaf5ff;
+  --surface: #ffffff;
+  --primary: #0b2348;
+  --primary-medium: #174477;
+  --accent: #74b8ea;
+  --accent-light: #b9ddf7;
+  --text-primary: #101828;
+  --text-secondary: #667085;
+  --success: #12b76a;
+  --success-soft: #ecfdf3;
+  --danger: #f04438;
+  --danger-soft: #fef3f2;
+  --warning: #f79009;
+  --warning-soft: #fffaeb;
+  --border: #d6e8f7;
+  --muted: #f3f9ff;
+  --radius-card: 24px;
+  --radius-btn: 16px;
+  --shadow-soft: 0 8px 30px rgba(11, 35, 72, 0.06);
+  --shadow-card: 0 4px 20px rgba(11, 35, 72, 0.05);
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-medium: var(--primary-medium);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-card: var(--shadow-card);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 40%, white);
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .card-surface {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .gradient-balance {
+    background: linear-gradient(145deg, #1a4a8a 0%, #0b2348 55%, #0a1c38 100%);
+  }
+
+  .text-balance-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.4s ease-out both;
+  }
+
+  .animate-sheet-up {
+    animation: sheetUp 0.28s ease-out both;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheetUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Recharts polish */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #d6e8f7;
+}
+
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-soft) !important;
 }

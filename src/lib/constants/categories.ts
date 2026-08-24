@@ -1,0 +1,17 @@
+export const DEFAULT_CATEGORIES = [
+  { name: "Moradia", icon: "Home", category_type: "expense" as const },
+  { name: "Alimentação", icon: "Utensils", category_type: "expense" as const },
+  { name: "Transporte", icon: "Car", category_type: "expense" as const },
+  { name: "Saúde", icon: "HeartPulse", category_type: "expense" as const },
+  { name: "Lazer", icon: "Smile", category_type: "expense" as const },
+  { name: "Compras", icon: "ShoppingBag", category_type: "expense" as const },
+  { name: "Assinaturas", icon: "Repeat", category_type: "expense" as const },
+  { name: "Educação", icon: "GraduationCap", category_type: "expense" as const },
+  { name: "Contas", icon: "FileText", category_type: "expense" as const },
+  { name: "Investimentos", icon: "TrendingUp", category_type: "both" as const },
+  { name: "Besteiras", icon: "Candy", category_type: "expense" as const },
+  { name: "Outros", icon: "MoreHorizontal", category_type: "both" as const },
+  { name: "Salário", icon: "Wallet", category_type: "income" as const },
+  { name: "Freelance", icon: "Briefcase", category_type: "income" as const },
+  { name: "Extra", icon: "PlusCircle", category_type: "income" as const },
+] as const;

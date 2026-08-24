@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Econo Mizi
 
-## Getting Started
+Aplicação web de gestão financeira pessoal (mobile-first), pronta para deploy na Vercel com Supabase.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- Supabase (Auth + PostgreSQL + RLS)
+- Recharts, Lucide React, React Hook Form, Zod
+
+## 1. Instalar Node.js
+
+Use Node.js 20 LTS ou superior: https://nodejs.org
+
+## 2. Instalar dependências
+
+```bash
+npm install
+```
+
+## 3. Criar projeto no Supabase
+
+1. Acesse https://supabase.com
+2. Crie um novo projeto
+3. Abra **SQL Editor**
+
+## 4. Executar migrations
+
+Cole e execute o conteúdo de:
+
+`supabase/migrations/20260824000000_initial_schema.sql`
+
+Isso cria tabelas, índices, triggers e políticas RLS (`auth.uid() = user_id`).
+
+## 5. Pegar URL e anon key
+
+No Supabase: **Project Settings → API**
+
+- Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+- anon public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+> Nunca use a `service_role` key no frontend.
+
+## 6. Criar `.env.local`
+
+```bash
+cp .env.example .env.local
+```
+
+Preencha:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+```
+
+## 7. Rodar localmente
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Sem variáveis do Supabase, a tela de login oferece **modo demonstração** (dados mockados, claramente identificados).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 8. Testar
 
-## Learn More
+1. Criar conta (e-mail + senha) ou entrar no modo demo
+2. Concluir onboarding (salário, pagamento, reserva, meta)
+3. Adicionar gastos e receitas
+4. Navegar por Dashboard, Movimentações, Análises, Metas e Perfil
+5. Guardar/retirar da reserva
+6. Trocar o mês no seletor
 
-To learn more about Next.js, take a look at the following resources:
+## 9. Deploy na Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Envie o repositório para o GitHub
+2. Importe o projeto em https://vercel.com
+3. Em **Environment Variables**, adicione:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 10. Auth no Supabase (produção)
 
-## Deploy on Vercel
+Em **Authentication → URL Configuration**, adicione a URL do app na Vercel em:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Site URL
+- Redirect URLs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+```bash
+npm run dev      # desenvolvimento
+npm run build    # build de produção
+npm run start    # servir build
+npm run lint     # eslint
+```
+
+## Estrutura principal
+
+- `src/app` — rotas
+- `src/components` — UI, dashboard, charts, transactions
+- `src/lib/finance` — cálculos financeiros centralizados
+- `src/lib/supabase` — clients browser/server + middleware
+- `src/lib/config.ts` — nome do app (altere em um só lugar)
+- `supabase/migrations` — schema SQL + RLS
+
+## PWA
+
+O app inclui `manifest.webmanifest`, ícones e service worker. No celular (HTTPS/Vercel), use “Adicionar à tela inicial”.
+
+## Alterar o nome do app
+
+Edite apenas `src/lib/config.ts`.

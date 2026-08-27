@@ -35,6 +35,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isPublicApi = pathname.startsWith("/api/");
   const isPublicAsset =
     pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
@@ -42,7 +43,7 @@ export async function updateSession(request: NextRequest) {
     pathname === "/sw.js" ||
     pathname.includes(".");
 
-  if (isPublicAsset) return supabaseResponse;
+  if (isPublicAsset || isPublicApi) return supabaseResponse;
 
   if (!user && !isAuthRoute && pathname !== "/demo") {
     const urlRedirect = request.nextUrl.clone();

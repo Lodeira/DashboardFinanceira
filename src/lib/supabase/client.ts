@@ -9,7 +9,8 @@ export async function fetchPublicConfig(): Promise<PublicSupabaseConfig> {
   if (!configPromise) {
     configPromise = fetch("/api/public-config", { cache: "no-store" })
       .then(async (res) => {
-        if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        if (!res.ok || !contentType.includes("application/json")) {
           return { configured: false, url: null, key: null };
         }
         return (await res.json()) as PublicSupabaseConfig;

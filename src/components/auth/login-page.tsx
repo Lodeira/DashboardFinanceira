@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,8 +8,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { appConfig } from "@/lib/config";
-import { isDemoMode, isSupabaseConfigured } from "@/lib/supabase/config";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, fetchPublicConfig } from "@/lib/supabase/client";
 import { loginSchema, type LoginInput } from "@/schemas";
 import { useFinance } from "@/providers/finance-provider";
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ export function LoginPage() {
   const { signInDemo } = useFinance();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
+  const [supabaseReady, setSupabaseReady] = useState<boolean | null>(null);
 
   const {
     register,
@@ -28,22 +28,29 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  useEffect(() => {
+    void fetchPublicConfig().then((config) => {
+      setSupabaseReady(config.configured);
+    });
+  }, []);
+
   async function onSubmit(data: LoginInput) {
-    if (!isSupabaseConfigured()) {
+    const config = await fetchPublicConfig();
+    if (!config.configured) {
       toast.error("Configure o Supabase ou use o modo demonstração.");
       return;
     }
 
     setLoading(true);
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
 
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
-            data: { name: appConfig.defaultUserName },
+            data: { name: appConfig.defaultUserName || undefined },
           },
         });
         if (error) throw error;
@@ -142,16 +149,12 @@ export function LoginPage() {
           </button>
         </form>
 
-        {isDemoMode() ? (
+        {supabaseReady === false ? (
           <div className="mt-4 card-surface p-4 text-center">
             <p className="text-sm text-text-secondary">
               Supabase ainda não configurado.
             </p>
-            <Button
-              variant="soft"
-              className="mt-3 w-full"
-              onClick={enterDemo}
-            >
+            <Button variant="soft" className="mt-3 w-full" onClick={enterDemo}>
               Entrar no modo demonstração
             </Button>
           </div>

@@ -6,11 +6,10 @@ import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { DemoBanner } from "@/components/layout/demo-banner";
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
-import { isDemoMode } from "@/lib/supabase/config";
 import { useFinance } from "@/providers/finance-provider";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { loading, authenticated, profile, demoMode } = useFinance();
+  const { loading, authenticated, profile } = useFinance();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -70,7 +69,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="min-w-0 flex-1">{children}</main>
       </div>
       <BottomNavigation />
-      {demoMode || isDemoMode() ? null : null}
     </div>
   );
 }

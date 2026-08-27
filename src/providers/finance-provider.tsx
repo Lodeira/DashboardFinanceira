@@ -20,8 +20,7 @@ import {
   mockTransactions,
   DEMO_USER_ID,
 } from "@/lib/mocks/demo-data";
-import { isDemoMode, isSupabaseConfigured } from "@/lib/supabase/config";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, fetchPublicConfig } from "@/lib/supabase/client";
 import { nowInSaoPaulo, shiftMonth, toISODate } from "@/lib/utils/date";
 import type {
   Category,
@@ -78,7 +77,7 @@ function enrichTransactions(
 }
 
 export function FinanceProvider({ children }: { children: ReactNode }) {
-  const demoMode = isDemoMode();
+  const [demoMode, setDemoMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -94,9 +93,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState(() => nowInSaoPaulo());
 
   const loadFromSupabase = useCallback(async () => {
-    if (!isSupabaseConfigured()) return;
+    const config = await fetchPublicConfig();
+    if (!config.configured) return;
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -166,22 +166,36 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   }, [demoMode, loadFromSupabase]);
 
   useEffect(() => {
-    if (demoMode) {
-      setLoading(false);
-      return;
-    }
+    let unsubscribe: (() => void) | undefined;
 
-    void loadFromSupabase();
+    void (async () => {
+      const config = await fetchPublicConfig();
+      const isDemo = !config.configured;
+      setDemoMode(isDemo);
 
-    const supabase = createClient();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      void loadFromSupabase();
-    });
+      if (isDemo) {
+        setLoading(false);
+        return;
+      }
 
-    return () => subscription.unsubscribe();
-  }, [demoMode, loadFromSupabase]);
+      await loadFromSupabase();
+
+      try {
+        const supabase = await createClient();
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(() => {
+          void loadFromSupabase();
+        });
+        unsubscribe = () => subscription.unsubscribe();
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+      }
+    })();
+
+    return () => unsubscribe?.();
+  }, [loadFromSupabase]);
 
   const completeOnboarding = useCallback(
     async (data: OnboardingInput) => {
@@ -205,7 +219,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -256,7 +270,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const { error } = await supabase
         .from("profiles")
         .update(data)
@@ -312,7 +326,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -376,7 +390,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const payload: Record<string, unknown> = {};
       if (data.description != null) payload.description = data.description;
       if (data.amount != null) payload.amount = data.amount;
@@ -405,7 +419,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const { error } = await supabase.from("transactions").delete().eq("id", id);
       if (error) {
         console.error(error);
@@ -450,7 +464,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -511,7 +525,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -556,7 +570,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const payload: Record<string, unknown> = {};
       if (data.name != null) payload.name = data.name;
       if (data.targetAmount != null) payload.target_amount = data.targetAmount;
@@ -582,7 +596,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = await createClient();
       const { error } = await supabase
         .from("goals")
         .update({ active: false })
@@ -603,7 +617,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       return;
     }
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
     setAuthenticated(false);
     setProfile(null);

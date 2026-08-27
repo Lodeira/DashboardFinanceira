@@ -1,20 +1,24 @@
-function getSupabaseUrl(): string | undefined {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+function normalizeUrl(raw?: string): string | undefined {
   if (!raw) return undefined;
+  const url = raw.trim().replace(/\/rest\/v1\/?$/i, "").replace(/\/$/, "");
+  return url || undefined;
+}
 
-  // Corrige URL colada com /rest/v1/ por engano
-  return raw.replace(/\/rest\/v1\/?$/i, "").replace(/\/$/, "");
+function normalizeKey(raw?: string): string | undefined {
+  const key = raw?.trim();
+  return key || undefined;
+}
+
+export function getSupabaseUrl(): string | undefined {
+  return normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
 /** Aceita anon (legado) ou publishable (chave nova do Supabase). */
-function getSupabaseKey(): string | undefined {
-  const key = (
+export function getSupabaseKey(): string | undefined {
+  return normalizeKey(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    ""
-  ).trim();
-
-  return key || undefined;
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
 }
 
 export function isSupabaseConfigured(): boolean {
@@ -47,3 +51,9 @@ export function getSupabaseEnv() {
 
   return { url, key };
 }
+
+export type PublicSupabaseConfig = {
+  configured: boolean;
+  url: string | null;
+  key: string | null;
+};

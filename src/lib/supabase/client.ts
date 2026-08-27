@@ -1,11 +1,32 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { getSupabaseEnv, isSupabaseConfigured } from "./config";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PublicSupabaseConfig } from "./config";
 
-export function createClient() {
-  if (!isSupabaseConfigured()) {
+let client: SupabaseClient | null = null;
+let configPromise: Promise<PublicSupabaseConfig> | null = null;
+
+export async function fetchPublicConfig(): Promise<PublicSupabaseConfig> {
+  if (!configPromise) {
+    configPromise = fetch("/api/public-config", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) {
+          return { configured: false, url: null, key: null };
+        }
+        return (await res.json()) as PublicSupabaseConfig;
+      })
+      .catch(() => ({ configured: false, url: null, key: null }));
+  }
+  return configPromise;
+}
+
+export async function createClient() {
+  if (client) return client;
+
+  const config = await fetchPublicConfig();
+  if (!config.configured || !config.url || !config.key) {
     throw new Error("Supabase não configurado");
   }
 
-  const { url, key } = getSupabaseEnv();
-  return createBrowserClient(url, key);
+  client = createBrowserClient(config.url, config.key);
+  return client;
 }
